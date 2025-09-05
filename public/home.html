@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>N2O</title>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="/static/min/bootstrap.min.css">
+  <script src="/static/min/jquery321.min.js"></script>
+  <script src="/static/min/bootstrap337.min.js"></script>
+
+  <!-- Font Awesome -->
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" type="text/css" href="/static/css/home.css">
+</head>
+<body>
+<div class="container title">
+  <div class="row">
+    <div class="col-sm-12">
+      <h1>Welcome to N2O</h1>
+      <h2>Your Online TV!</h2>
+      <h3>See curated content 24 hours of the day. Choose one of the exciting channels below.</h3>
+      <hr/>
+      <h4>Channels</h4>
+    </div>
+  </div>
+
+  <div id="channels" class="row maincontent"></div>
+</div>
+
+<footer>
+  <p>© Copyrights 2018 N2O TV</p>
+  <a id="social" target="_blank" title="follow me on twitter" href="https://twitter.com/go_n2o">
+    <i class="fa fa-twitter fa-3x" aria-hidden="true"></i>
+  </a>
+  <a id="social" target="_blank" title="find us on Facebook" href="https://www.facebook.com/n2o.television/">
+    <i class="fa fa-facebook-square fa-3x" aria-hidden="true"></i>
+  </a>
+</footer>
+
+<!-- Firebase SDK -->
+<script src="/__/firebase/10.0.0/firebase-app.js"></script>
+<script src="/__/firebase/10.0.0/firebase-functions.js"></script>
+<script src="/__/firebase/init.js"></script>
+
+<script>
+  const getAllChannels = firebase.functions().httpsCallable("getAllChannels");
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const tvname = urlParams.get("tvname") || "DefaultTV";
+
+  async function loadChannels() {
+    try {
+      const res = await getAllChannels({ tvname });
+      const channels = res.data.channels || [];
+
+      const container = document.getElementById("channels");
+      container.innerHTML = "";
+
+      channels.forEach(([name]) => {
+        const col = document.createElement("div");
+        col.className = "col-sm-6";
+
+        const p = document.createElement("p");
+        const a = document.createElement("a");
+        a.id = "channel";
+        a.className = "tenth before after";
+        a.href = `/${name}?tvname=${tvname}`;
+        a.innerText = name;
+
+        p.appendChild(a);
+        col.appendChild(p);
+        container.appendChild(col);
+      });
+    } catch (err) {
+      console.error("Error loading channels:", err);
+    }
+  }
+
+  loadChannels();
+</script>
+</body>
+</html>

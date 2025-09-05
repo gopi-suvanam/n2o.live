@@ -1,0 +1,23 @@
+{
+  "name": "n2o-tv",
+  "description": "N2O TV - Firebase Functions backend for Sheets + YouTube API",
+  "scripts": {
+    "serve": "firebase emulators:start",
+    "deploy": "firebase deploy --only functions",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": "18"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "googleapis": "^131.0.0",
+    "moment-timezone": "^0.5.45",
+    "utf8": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0"
+  },
+  "private": true
+}

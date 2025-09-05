@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns#">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta property="og:title" content="N2O TV" />
+  <meta property="og:type" content="video" />
+  <meta property="og:image" content="https://n2o.tv/static/img/about_btn.png" />
+  <meta property="og:description" content="Curious about things? Watch N2O.TV" />
+  <meta property="og:url" content="https://n2o.tv" />
+  <meta property="og:site_name" content="N2O Tv" />
+  <link id="favicon" rel="shortcut icon" type="image/png" href="https://n2o.tv/static/img/about_btn.png"/>
+
+  <title>N2O: Learn Something New!</title>
+
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Dosis|Monoton" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/chat.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/modal.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="/static/min/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
+  <script src="/static/js/function.js"></script>
+  <script src="/static/js/chat.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body class="animated shake">
+
+<iframe style="display:none" src="https://mappy.tech/contribute/" height="0" tabindex="-1" width="0"></iframe>
+
+<div id="videocontainer">
+  <div id="player1"></div>
+</div>
+
+<div id="chat-text-box">
+  <div id="toggle_fullscreen" class="maximize" onclick="toggle_full_screen()">
+    <img src="/static/img/maximize.png" class="maximize-button" />
+  </div>
+  <div id="viewers" class="viewers"></div>
+  <span id="share" class="share">
+    <a id="clink" target="_blank" onclick="whatsapp_share()">
+      <i class="fa fa-share-alt fa-3x" aria-hidden="true"></i>
+    </a>
+  </span>
+  <span class="heart" onclick="createHeart()">
+    <img src="/static/img/hp.png" class="maximize-button" />
+  </span>
+</div>
+
+<div id="curtain" onclick="startVideo();toggle_controls();">
+  <a class="js-open-modal about_btn" onclick="reload()">
+    <img id="logo" src="/static/img/about_btn.png" />
+  </a>
+
+  <div id="qwerty" class="title_section">
+    <div id="results" class="pgm"></div>
+    <h1 class="vid-title" id="title">Video Title</h1>
+  </div>
+
+  <div id="controls"></div>
+</div>
+
+<div id="curtain2" onclick="createHeart()"></div>
+
+<div id="bottom-panel"></div>
+
+<!-- Firebase SDK -->
+<script src="/__/firebase/10.0.0/firebase-app.js"></script>
+<script src="/__/firebase/10.0.0/firebase-functions.js"></script>
+<script src="/__/firebase/init.js"></script>
+
+<script src="/static/js/metaData.js"></script>
+<script src="/static/js/time.js"></script>
+<script src="/static/js/controller.js"></script>
+<script src="/static/js/modal.js"></script>
+<script src="/static/js/anim.js"></script>
+<script src="https://apis.google.com/js/client.js?onload=onClientLoad"></script>
+
+<script>
+  // Random viewer count
+  document.getElementById("viewers").innerText =
+    Math.floor(Math.random() * (15 - 10 + 1)) + 10 + " viewers";
+
+  // Firebase Functions
+  const getAllChannels = firebase.functions().httpsCallable("getAllChannels");
+  const getChannel = firebase.functions().httpsCallable("getChannel");
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const tvname = urlParams.get("tvname") || "DefaultTV";
+  const channelName = window.location.pathname.replace("/", "") || "DefaultChannel";
+
+  async function loadPage() {
+    try {
+      // Load channel data
+      const channelRes = await getChannel({ tvname, channel: channelName });
+      const { keywords, videos, contentDetails, logo } = channelRes.data;
+
+      // Set logo + favicon
+      if (logo && logo.length > 0 && logo[0].length > 0) {
+        $("#logo").attr("src", logo[0][0]);
+        $("#favicon").attr("href", logo[0][0]);
+        $("meta[property='og\\:image']").attr("content", logo[0][0]);
+      }
+
+      // Show video title
+      if (contentDetails && contentDetails.length > 0) {
+        $("#title").text(contentDetails[0].snippet.title);
+      }
+
+      // Render channel controls
+      const allChannelsRes = await getAllChannels({ tvname });
+      const channels = allChannelsRes.data.channels;
+      const controlsDiv = document.getElementById("controls");
+      controlsDiv.innerHTML = "";
+      channels.forEach(([name, label]) => {
+        const a = document.createElement("a");
+        a.className = "tenth before after";
+        a.style.margin = "5px";
+        a.href = `/${name}?tvname=${tvname}`;
+        a.innerText = `${name}:${label}`;
+        controlsDiv.appendChild(a);
+        controlsDiv.append(" ");
+      });
+
+      // Embed first video
+      if (videos && videos.length > 0) {
+        const videoId = videos[0][0];
+        const player = document.createElement("iframe");
+        player.width = "100%";
+        player.height = "500";
+        player.src = `https://www.youtube.com/embed/${videoId}`;
+        player.frameBorder = "0";
+        player.allow = "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture";
+        player.allowFullscreen = true;
+        document.getElementById("player1").appendChild(player);
+      }
+    } catch (err) {
+      console.error("Error loading page:", err);
+    }
+  }
+
+  loadPage();
+  setInterval(myTimer, 1000);
+</script>
+</body>
+</html>
